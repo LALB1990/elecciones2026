@@ -41,17 +41,17 @@ function contestFor(select) {
 }
 
 function recordId(contest, index) {
-  return `${contest.id}_${Number(index) + 1}`;
+  return `${contest.id}_${demo ? Number(index) + 1 : index.toUpperCase()}`;
 }
 
 function countsFor(contest) {
   return [...Object.entries(contest.candidates), ["blank", "Votos blancos"], ["null", "Votos nulos"]];
 }
 
-function renderRoster(contest, candidates) {
+function renderRoster(contest) {
   if (rosterContestId === contest.id) return;
   rosterContestId = contest.id;
-  if (demo) {
+  {
     const nomination = nominations[contest.id];
     if (!nomination) {
       $("roster").replaceChildren(element("p", "Nómina pendiente de verificación."));
@@ -84,17 +84,7 @@ function renderRoster(contest, candidates) {
     if (nomination.verification) {
       $("roster").append(element("p", nomination.verification));
     }
-    return;
   }
-  $("roster").replaceChildren(...candidates.map(([id, name]) => {
-    const members = contest.roster?.[id] ?? [];
-    if (!members.length) return element("p", name, "rank");
-    const details = document.createElement("details");
-    const list = document.createElement("ul");
-    list.append(...members.map(({ role, person }) => element("li", `${role}: ${person}`)));
-    details.append(element("summary", name), list);
-    return details;
-  }));
 }
 
 function renderTabs() {
@@ -115,9 +105,11 @@ function renderTabs() {
 function renderDashboard() {
   if (!ready) return;
   const contest = contestFor("scope");
-  const report = contest.stations.map((_, index) => records[recordId(contest, index)]).filter(Boolean);
+  const report = demo
+    ? contest.stations.map((_, index) => records[recordId(contest, index)]).filter(Boolean)
+    : Object.entries(records).filter(([id]) => id.startsWith(`${contest.id}_`)).map(([, record]) => record);
   const candidates = Object.entries(contest.candidates);
-  renderRoster(contest, candidates);
+  renderRoster(contest);
   const totals = Object.fromEntries(countsFor(contest).map(([id]) => [
     id,
     report.reduce((sum, record) => {
@@ -127,8 +119,8 @@ function renderDashboard() {
   ]));
   const valid = candidates.reduce((sum, [id]) => sum + totals[id], 0);
   const metrics = [
-    ["Actas registradas", `${number.format(report.length)} / ${number.format(contest.stations.length)}`],
-    ["Avance de carga", percent.format(report.length / contest.stations.length)],
+    ["Actas registradas", number.format(report.length)],
+    ...(demo ? [["Avance de carga", percent.format(report.length / contest.stations.length)]] : []),
     ["Votos válidos", number.format(valid)],
     ["Votos blancos", number.format(totals.blank)],
     ["Votos nulos", number.format(totals.null)],
@@ -163,7 +155,11 @@ function fillStations() {
 }
 
 function currentRecord() {
-  return records[recordId(contestFor("capture-scope"), $("station").value)];
+  return records[recordId(contestFor("capture-scope"), stationCode())];
+}
+
+function stationCode() {
+  return demo ? $("station").value : $("station-code").value;
 }
 
 function loadEntry() {
@@ -172,7 +168,8 @@ function loadEntry() {
   loadedRevision = record?.revision ?? 0;
   dirty = false;
   $("reload-entry").hidden = true;
-  $("record-state").textContent = record ? `Acta publicada · revisión ${loadedRevision}` : "Acta pendiente";
+  $("record-state").textContent = record ? `Acta publicada · revisión ${loadedRevision}`
+    : stationCode() ? "Acta pendiente" : "Ingresa el identificador de la junta.";
   $("publish").textContent = record ? "Publicar corrección" : "Publicar acta";
   $("counts").replaceChildren(...countsFor(contest).map(([id, name]) => {
     const label = element("label", name);
@@ -209,9 +206,10 @@ function setSaving(value) {
 async function publish(event) {
   event.preventDefault();
   if (saving || !allowed || !ready) return;
-  const id = recordId(contestFor("capture-scope"), $("station").value);
+  const id = recordId(contestFor("capture-scope"), stationCode());
   const votes = Object.fromEntries([...$("counts").querySelectorAll("input")].map((input) => [input.name, input.valueAsNumber]));
-  if (!confirm(`¿${$("publish").textContent} para ${$("station").selectedOptions[0].textContent}?`)) return;
+  const station = demo ? $("station").selectedOptions[0].textContent : stationCode().toUpperCase();
+  if (!confirm(`¿${$("publish").textContent} para ${station}?`)) return;
   setSaving(true);
   feedback("Publicando…");
   try {
@@ -228,6 +226,10 @@ async function publish(event) {
 }
 
 function setupCapture() {
+  $("demo-station").hidden = !demo;
+  $("live-station").hidden = demo;
+  $("station-code").required = !demo;
+  $("station-code").oninput = loadEntry;
   options("capture-office", offices.map((name) => [name, name]));
   fillScopes("capture-scope", offices[0]);
   fillStations();
@@ -273,6 +275,16 @@ function setupCapture() {
       button.disabled = false;
     }
   };
+  $("reset-password").onclick = async () => {
+    const email = $("login").elements.email;
+    if (!email.reportValidity()) return;
+    try {
+      await store.resetPassword(email.value);
+      feedback("Si la cuenta está habilitada, recibirás un enlace para restablecer tu contraseña.");
+    } catch {
+      feedback("No se pudo solicitar el enlace. Inténtalo de nuevo.");
+    }
+  };
   $("logout").onclick = async () => {
     try {
       await store.logout();
@@ -286,6 +298,8 @@ async function start() {
   $("election").textContent = election.name;
   $(capture ? "capture-link" : "public-link").setAttribute("aria-current", "page");
   if (demo) {
+    $("public-link").href = "?demo";
+    $("capture-link").href = "?vista=captura&demo";
     $("notice").textContent = "Demostración con datos ficticios. Las actas se guardan en este navegador y se comparten entre sus pestañas.";
     $("notice").hidden = false;
   }

@@ -62,6 +62,7 @@ export async function openStore() {
       }, onError);
     },
     login: (email, password) => authApi.signInWithEmailAndPassword(auth, email, password),
+    resetPassword: (email) => authApi.sendPasswordResetEmail(auth, email),
     logout: () => authApi.signOut(auth),
     save(id, votes, revision) {
       const ref = dbApi.doc(records, id);

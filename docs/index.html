@@ -10,7 +10,7 @@
 <body>
   <header class="top"><div class="wrap mast">
     <a class="brand" href="./"><span aria-hidden="true">▥</span> Resultados seccionales</a>
-    <nav aria-label="Vistas"><a id="public-link" href="./">Tablero</a><a id="capture-link" href="?vista=captura">Captura</a></nav>
+    <nav aria-label="Vistas"><a id="public-link" href="./">Resultados</a><a id="capture-link" href="?vista=captura">Captura</a></nav>
   </div></header>
   <main class="wrap">
     <section class="hero">
@@ -21,31 +21,42 @@
     </section>
     <div id="notice" class="notice" hidden></div>
     <section id="dashboard" hidden aria-label="Tablero de resultados">
-      <div id="tabs" class="tabs" aria-label="Dignidades"></div>
-      <label class="filter">Circunscripción<select id="scope"></select></label>
+      <div class="election-nav">
+        <div id="tabs" class="tabs" aria-label="Dignidades"></div>
+        <label class="filter">Circunscripción<select id="scope"></select></label>
+      </div>
       <div class="stats" id="stats"></div>
-      <section class="panel">
-        <div class="panel-head"><h2>Resultados por candidatura o lista</h2><small id="updated"></small></div>
-        <div id="ranking"></div>
-      </section>
-      <section class="panel roster" aria-labelledby="roster-title">
-        <h2 id="roster-title">Candidaturas y listas</h2>
-        <div id="roster"></div>
-      </section>
+      <div class="results-layout">
+        <section class="panel results-panel">
+          <div class="panel-head"><h2>Resultados por candidatura o lista</h2><small id="updated"></small></div>
+          <div id="ranking"></div>
+        </section>
+        <section class="panel roster" aria-labelledby="roster-title">
+          <h2 id="roster-title">Candidaturas y listas</h2>
+          <div id="roster"></div>
+        </section>
+      </div>
     </section>
     <section id="capture" hidden aria-label="Captura de actas">
       <form id="login" class="panel form" hidden>
         <h2>Acceso de operadores</h2>
         <label>Correo<input name="email" type="email" autocomplete="username" required></label>
         <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
-        <button>Ingresar</button>
+        <div class="actions">
+          <button>Ingresar</button>
+          <button id="reset-password" class="secondary" type="button">Restablecer contraseña</button>
+        </div>
       </form>
       <button id="logout" type="button" class="secondary" hidden>Cerrar sesión</button>
       <form id="entry" class="panel form" hidden>
         <h2>Registrar acta</h2>
         <label>Dignidad<select id="capture-office"></select></label>
         <label>Circunscripción<select id="capture-scope"></select></label>
-        <label>Mesa o junta receptora<select id="station"></select></label>
+        <label id="demo-station">Mesa de demostración<select id="station"></select></label>
+        <label id="live-station">Identificador de la JRV
+          <input id="station-code" placeholder="Identificador único de la junta" maxlength="32" pattern="[A-Za-z0-9]+(-[A-Za-z0-9]+)*" aria-describedby="station-help">
+          <small id="station-help">Usa un código único para toda Urdaneta. Si el número se repite, incluye el código del recinto y el tipo de junta separados por guiones.</small>
+        </label>
         <p id="record-state"></p>
         <div id="counts" class="counts"></div>
         <p id="entry-total">Total de votos del acta: 0</p>

@@ -1,5 +1,6 @@
-// Pega la configuración de la aplicación web de Firebase y cambia demo a false.
-export const demo = true;
+import { nominations } from "./candidaturas.mjs";
+
+export const demo = new URLSearchParams(globalThis.location?.search).has("demo");
 export const firebaseConfig = {
   projectId: "elecciones2026-lalb",
   appId: "1:375098298897:web:0aea635eda5f092b8197b0",
@@ -7,52 +8,28 @@ export const firebaseConfig = {
   authDomain: "elecciones2026-lalb.firebaseapp.com",
 };
 
+function contest(id, office, scope, demoStations) {
+  const nomination = nominations[id];
+  const rows = nomination.lists ?? nomination.entries;
+  const labels = Object.fromEntries(rows.map(([label, principal], index) => {
+    const key = label.split(" · ")[0];
+    const display = nomination.lists || id === "concejo-urbano" ? label : `${principal} · ${label}`;
+    return [demo ? String.fromCharCode(97 + index) : key, demo ? `Opción ${index + 1}` : display];
+  }));
+  return {
+    id, office, scope, candidates: labels,
+    stations: demo ? Array.from({ length: demoStations }, (_, index) => `Mesa de prueba ${index + 1}`) : [],
+  };
+}
+
 export const election = {
-  id: "urdaneta-demo",
-  name: "Urdaneta · Los Ríos · Ecuador",
+  id: demo ? "urdaneta-demo" : "urdaneta-seccionales-2027",
+  name: "Urdaneta · Los Ríos, Ecuador",
   contests: [
-    {
-      id: "alcaldia-centro", office: "Alcaldía", scope: "Cantón Urdaneta",
-      stations: ["Mesa 001", "Mesa 002", "Mesa 003", "Mesa 004"],
-      candidates: { a: "Candidatura A", b: "Candidatura B", c: "Candidatura C" },
-    },
-    {
-      id: "concejo-urbano", office: "Concejalía urbana", scope: "Catarama",
-      stations: ["Mesa 001", "Mesa 002"],
-      candidates: { a: "Lista A", b: "Lista B" },
-      roster: {
-        a: [
-          { role: "Principal 1", person: "Persona de ejemplo A" },
-          { role: "Suplente 1", person: "Persona de ejemplo B" },
-        ],
-      },
-    },
-    {
-      id: "concejo-rural", office: "Concejalía rural", scope: "Ricaurte",
-      stations: ["Mesa 001", "Mesa 002", "Mesa 003"],
-      candidates: { a: "Lista A", b: "Lista B" },
-    },
-    {
-      id: "prefectura-norte", office: "Prefectura", scope: "Los Ríos · Solo mesas de Urdaneta",
-      stations: ["Mesa 001", "Mesa 002", "Mesa 003", "Mesa 004"],
-      candidates: { a: "Candidatura D", b: "Candidatura E", c: "Candidatura F" },
-      roster: {
-        a: [
-          { role: "Prefectura", person: "Persona de ejemplo C" },
-          { role: "Viceprefectura", person: "Persona de ejemplo D" },
-        ],
-      },
-    },
-    {
-      id: "junta-centro", office: "Junta parroquial", scope: "Parroquia rural Ricaurte",
-      stations: ["Mesa 001", "Mesa 002", "Mesa 003"],
-      candidates: { a: "Lista A", b: "Lista B", c: "Lista C" },
-      roster: {
-        a: [
-          { role: "Vocal principal 1", person: "Persona de ejemplo E" },
-          { role: "Vocal suplente 1", person: "Persona de ejemplo F" },
-        ],
-      },
-    },
+    contest("alcaldia-centro", "Alcaldía", "Cantón Urdaneta", 4),
+    contest("concejo-urbano", "Concejalía urbana", "Catarama", 2),
+    contest("concejo-rural", "Concejalía rural", "Ricaurte", 3),
+    contest("prefectura-norte", "Prefectura", "Los Ríos · Solo mesas de Urdaneta", 4),
+    contest("junta-centro", "Junta parroquial", "Parroquia rural Ricaurte", 3),
   ],
 };
