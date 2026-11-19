@@ -57,15 +57,25 @@ function renderRoster(contest, candidates) {
       $("roster").replaceChildren(element("p", "Nómina pendiente de verificación."));
       return;
     }
-    const list = document.createElement("ul");
-    list.append(...nomination.entries.map(([label, ...people]) => {
-      const names = people.map((person, index) => {
+    const describePeople = (people) => people.map((person, index) => {
         const role = nomination.roles?.[index];
         return role ? `${role}: ${person}` : person;
-      });
-      return element("li", [label, ...names].join(" · "));
-    }));
-    $("roster").replaceChildren(list);
+    });
+    if (nomination.lists) {
+      $("roster").replaceChildren(...nomination.lists.map(([label, pairs]) => {
+        const details = document.createElement("details");
+        const list = document.createElement("ol");
+        list.append(...pairs.map((pair) => element("li", describePeople(pair).join(" · "))));
+        details.append(element("summary", label), list);
+        return details;
+      }));
+    } else {
+      const list = document.createElement("ul");
+      list.append(...nomination.entries.map(([label, ...people]) => {
+        return element("li", [label, ...describePeople(people)].join(" · "));
+      }));
+      $("roster").replaceChildren(list);
+    }
     if (nomination.url && nomination.source) {
       const source = element("a", nomination.source);
       source.href = nomination.url;

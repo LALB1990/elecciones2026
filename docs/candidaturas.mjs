@@ -23,6 +23,42 @@ export const nominations = {
       ["100 · Movimiento Crecer", "Karla Salazar", "Juan Burgos"],
     ],
   },
+  "concejo-rural": {
+    verification: "Nómina cotejada con las cinco fichas de concejalía rural compartidas para Urdaneta.",
+    roles: ["Principal", "Suplente"],
+    lists: [
+      ["1-91 · UNIR", [
+        ["Jacqueline Subia Vera", "Mauricio Peralta"],
+        ["Wladimir Cordova", "Johana Ramirez"],
+        ["Eliana Poveda", "Felix Orozco"],
+        ["Javier Vera", "Samantha Cevallos Montero"],
+      ]],
+      ["3-2 · La Fuerza del Pueblo", [
+        ["Naidely Poma", "Luiggi Luiz"],
+        ["Holger Paredes", "Ketty Cevallos"],
+        ["Cecia Vera", "Walter Arreaga"],
+        ["Daniel Miranda", "Sonia Mera"],
+      ]],
+      ["6 · Partido Social Cristiano", [
+        ["Jimmy Zambrano", "Lourdes Almeida"],
+        ["Silvia Arroyo", "Mario Guerrero"],
+        ["Geovanny Contreras", "Susana Mosquera"],
+        ["Susana Ponce", "Junior Bustamante"],
+      ]],
+      ["7 · Movimiento Acción Democrática Nacional, ADN", [
+        ["Angel Baños Garofalo", "Genesis Paredes"],
+        ["Eloisa Calderon", "Denis Beltran"],
+        ["Luis Portilla", "Denis Guerrero"],
+        ["Viviana Bohorquez", "Joffre Magallon"],
+      ]],
+      ["100 · Movimiento Crecer", [
+        ["Freddy Zapata", "Joselyn Calderon"],
+        ["Joice Quiñonez", "Juan Jimenez"],
+        ["Elkin Montero Bajaña", "Maria Lozano"],
+        ["Rosa Leon", "Ariel Carrera"],
+      ]],
+    ],
+  },
   "prefectura-norte": {
     roles: ["Prefectura", "Viceprefectura"],
     source: "Referencia de los binomios publicados para Los Ríos",
