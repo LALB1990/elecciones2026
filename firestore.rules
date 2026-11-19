@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOperator() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+    }
+    function validResult() {
+      let data = request.resource.data;
+      return data.keys().hasOnly(['votes', 'revision', 'updatedAt'])
+        && data.votes is map
+        && data.votes.size() >= 3
+        && data.votes.blank is int && data.votes.blank >= 0 && data.votes.blank <= 1000000
+        && data.votes['null'] is int && data.votes['null'] >= 0 && data.votes['null'] <= 1000000
+        && data.revision is int && data.updatedAt == request.time;
+    }
+    match /operators/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+    }
+    match /elections/{electionId}/results/{resultId} {
+      allow read: if true;
+      allow create: if isOperator() && validResult() && request.resource.data.revision == 1;
+      allow update: if isOperator() && validResult()
+        && request.resource.data.votes.keys().hasAll(resource.data.votes.keys())
+        && request.resource.data.votes.keys().hasOnly(resource.data.votes.keys())
+        && request.resource.data.revision == resource.data.revision + 1;
+    }
+  }
+}

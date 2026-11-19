@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resultados seccionales</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="top"><div class="wrap mast">
+    <a class="brand" href="./"><span aria-hidden="true">▥</span> Resultados seccionales</a>
+    <nav aria-label="Vistas"><a id="public-link" href="./">Tablero</a><a id="capture-link" href="?vista=captura">Captura</a></nav>
+  </div></header>
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow" id="election"></p>
+      <h1 id="title">Resultados en vivo</h1>
+      <p id="subtitle">Consulta los votos a medida que se registran las actas.</p>
+      <p id="connection" class="status" role="status">Cargando configuración…</p>
+    </section>
+    <div id="notice" class="notice" hidden></div>
+    <section id="dashboard" hidden aria-label="Tablero de resultados">
+      <div id="tabs" class="tabs" aria-label="Dignidades"></div>
+      <label class="filter">Circunscripción<select id="scope"></select></label>
+      <div class="stats" id="stats"></div>
+      <section class="panel">
+        <div class="panel-head"><h2>Resultados por candidatura o lista</h2><small id="updated"></small></div>
+        <div id="ranking"></div>
+      </section>
+    </section>
+    <section id="capture" hidden aria-label="Captura de actas">
+      <form id="login" class="panel form" hidden>
+        <h2>Acceso de operadores</h2>
+        <label>Correo<input name="email" type="email" autocomplete="username" required></label>
+        <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
+        <button>Ingresar</button>
+      </form>
+      <button id="logout" type="button" class="secondary" hidden>Cerrar sesión</button>
+      <form id="entry" class="panel form" hidden>
+        <h2>Registrar acta</h2>
+        <label>Dignidad<select id="capture-office"></select></label>
+        <label>Circunscripción<select id="capture-scope"></select></label>
+        <label>Mesa o junta receptora<select id="station"></select></label>
+        <p id="record-state"></p>
+        <div id="counts" class="counts"></div>
+        <p id="entry-total">Total de votos del acta: 0</p>
+        <div class="actions">
+          <button id="publish">Publicar acta</button>
+          <button id="reload-entry" class="secondary" type="button" hidden>Cargar última versión</button>
+        </div>
+      </form>
+      <p id="feedback" role="status"></p>
+    </section>
+    <noscript>Activa JavaScript para utilizar el sistema.</noscript>
+  </main>
+  <footer class="wrap">Seguimiento de actas · Resultados preliminares de las actas registradas</footer>
+</body>
+</html>
