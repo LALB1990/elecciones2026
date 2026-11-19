@@ -59,6 +59,47 @@ export const nominations = {
       ]],
     ],
   },
+  "junta-centro": {
+    verification: "Nómina cotejada con las cinco fichas de la Junta Parroquial Rural de Ricaurte.",
+    roles: ["Vocal principal", "Suplente"],
+    lists: [
+      ["1-91 · UNIR", [
+        ["Cristhian Lara Guerrero", "Rosa Rojas"],
+        ["Erika Chamorro Bustos", "Eduardo Echeverria"],
+        ["Nixon Cabrera", "Diana Quintanilla"],
+        ["Marjorie Jaen Bohorquez", "Milton Villacres"],
+        ["Jimmy Vera Sanchez", "Niurka Sarela Santillan"],
+      ]],
+      ["3-2 · La Fuerza del Pueblo", [
+        ["Carlos Ube", "Kerly Litardo"],
+        ["Eoris Sanchez", "Edwin Uve"],
+        ["Edi Perez", "Diana del Rosario"],
+        ["Vianca Ube", "Kleber Caballero"],
+        ["Jose Suarez", "Liliana Navarrete"],
+      ]],
+      ["6 · Partido Social Cristiano", [
+        ["Betty Solis", "Anthony Guapulema"],
+        ["Bryan Barahona", "Mercedes Varas"],
+        ["Norma Coello", "Miguel Dumet"],
+        ["Carlos Campoamor", "Shirley Jacome"],
+        ["Olga Cedeño", "Alder Navarro"],
+      ]],
+      ["7 · Movimiento Acción Democrática Nacional, ADN", [
+        ["Mirian Aguilar", "Jhonny Armijos"],
+        ["Jonathan Ramirez", "Narcisa Muñoz"],
+        ["Eva Rosero", "Dennys Arias"],
+        ["Jostin Aldaz", "Jamileth Montero"],
+        ["Marilin Ramirez", "Angello Gavilanes"],
+      ]],
+      ["100 · Movimiento Crecer", [
+        ["Ruben Suarez", "Wendy España"],
+        ["Kassandra Pasos Luna", "Jonathan Roche"],
+        ["Luis Toapanta", "Geraldine Arevalo"],
+        ["Monica Luiz", "Aldahir Cervantes"],
+        ["Leyton Villegas", "Mercy Averos"],
+      ]],
+    ],
+  },
   "prefectura-norte": {
     roles: ["Prefectura", "Viceprefectura"],
     source: "Referencia de los binomios publicados para Los Ríos",
