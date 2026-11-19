@@ -102,14 +102,13 @@ export const nominations = {
   },
   "prefectura-norte": {
     roles: ["Prefectura", "Viceprefectura"],
-    source: "Referencia de los binomios publicados para Los Ríos",
-    url: "https://es.wikipedia.org/wiki/Elecciones_provinciales_de_Los_R%C3%ADos_de_2026",
+    verification: "Nómina cotejada con las cinco fichas de Prefectura y Viceprefectura de Los Ríos.",
     entries: [
-      ["1-91 · UNIR", "Rubén Avendaño Iturralde", "María Luisa Coello"],
-      ["2 · Unidad Popular", "José Luis Álvarez Yépez", "Andrea Janela Castillo Arboleda"],
-      ["6 · Partido Social Cristiano", "Johnny Terán Barragán", "Mayra Díaz Sandoya"],
-      ["7 · Acción Democrática Nacional", "Eduardo Mendoza Palma", "Tatiana Donoso Tovar"],
-      ["100 · Movimiento Crecer", "Vanessa Freire Vergara", "Mario Mora Carriel"],
+      ["1-91 · UNIR", "Ruben Avendaño Iturralde", "Maria Luisa Coello"],
+      ["2 · Partido Unidad Popular", "Jose Alvarez Yepez", "Andrea Castillo Arboleda"],
+      ["6 · Partido Social Cristiano", "Johnny Teran", "Mayra Diaz"],
+      ["7 · Movimiento Acción Democrática Nacional, ADN", "Eduardo Mendoza Palma", "Tatiana Donoso"],
+      ["100 · Movimiento Crecer", "Vanessa Freire", "Jandry Cedeño"],
     ],
   },
 };
