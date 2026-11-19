@@ -1,6 +1,5 @@
 import { demo, election } from "./config.mjs";
 import { openStore } from "./store.mjs";
-import { nominations } from "./candidaturas.mjs";
 
 const $ = (id) => document.getElementById(id);
 const number = new Intl.NumberFormat("es-EC");
@@ -15,7 +14,6 @@ let dirty = false;
 let saving = false;
 let allowed = demo;
 let store;
-let rosterContestId;
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -46,45 +44,6 @@ function recordId(contest, index) {
 
 function countsFor(contest) {
   return [...Object.entries(contest.candidates), ["blank", "Votos blancos"], ["null", "Votos nulos"]];
-}
-
-function renderRoster(contest) {
-  if (rosterContestId === contest.id) return;
-  rosterContestId = contest.id;
-  {
-    const nomination = nominations[contest.id];
-    if (!nomination) {
-      $("roster").replaceChildren(element("p", "Nómina pendiente de verificación."));
-      return;
-    }
-    const describePeople = (people) => people.map((person, index) => {
-        const role = nomination.roles?.[index];
-        return role ? `${role}: ${person}` : person;
-    });
-    if (nomination.lists) {
-      $("roster").replaceChildren(...nomination.lists.map(([label, pairs]) => {
-        const details = document.createElement("details");
-        const list = document.createElement("ol");
-        list.append(...pairs.map((pair) => element("li", describePeople(pair).join(" · "))));
-        details.append(element("summary", label), list);
-        return details;
-      }));
-    } else {
-      const list = document.createElement("ul");
-      list.append(...nomination.entries.map(([label, ...people]) => {
-        return element("li", [label, ...describePeople(people)].join(" · "));
-      }));
-      $("roster").replaceChildren(list);
-    }
-    if (nomination.url && nomination.source) {
-      const source = element("a", nomination.source);
-      source.href = nomination.url;
-      $("roster").append(source);
-    }
-    if (nomination.verification) {
-      $("roster").append(element("p", nomination.verification));
-    }
-  }
 }
 
 function renderTabs() {
@@ -134,7 +93,6 @@ function renderDashboard() {
     ? contest.stations.map((_, index) => records[recordId(contest, index)]).filter(Boolean)
     : Object.entries(records).filter(([id]) => id.startsWith(`${contest.id}_`)).map(([, record]) => record);
   const candidates = Object.entries(contest.candidates);
-  renderRoster(contest);
   const totals = Object.fromEntries(countsFor(contest).map(([id]) => [
     id,
     report.reduce((sum, record) => {
@@ -164,13 +122,25 @@ function renderDashboard() {
       const share = valid ? totals[id] / valid : 0;
       const item = element("div", "", "rank");
       const line = element("div", "", "rank-line");
+      const details = contest.members[id];
+      const label = details?.label ?? name;
+      const inline = details?.groups.length === 1 ? details.groups[0] : "";
       const value = valid ? `${number.format(totals[id])} votos · ${percent.format(share)}` : report.length ? "0 votos" : "—";
-      line.append(element("strong", name), element("span", value));
+      const heading = element("div", "", "rank-heading");
+      heading.append(element("strong", label));
+      if (inline) heading.append(element("span", ` · ${inline}`, "rank-inline"));
+      line.append(heading, element("span", value));
       const bar = document.createElement("progress");
       bar.setAttribute("aria-label", `Porcentaje de votos válidos para ${name}`);
       bar.max = 1;
       bar.value = share;
-      item.append(line, bar);
+      item.append(line);
+      if (details?.groups.length > 1) {
+        const members = element("ol", "", "rank-members");
+        members.append(...details.groups.map((group) => element("li", group)));
+        item.append(members);
+      }
+      item.append(bar);
       return item;
     });
   if (!report.length) {
@@ -326,11 +296,6 @@ function setupCapture() {
 }
 
 async function start() {
-  $("demo-link").hidden = capture;
-  if (demo) {
-    $("demo-link").textContent = "Volver a resultados reales";
-    $("demo-link").href = "./";
-  }
   $("election").textContent = election.name;
   $(capture ? "capture-link" : "public-link").setAttribute("aria-current", "page");
   if (demo) {

@@ -11,13 +11,23 @@ export const firebaseConfig = {
 function contest(id, office, scope, demoStations) {
   const nomination = nominations[id];
   const rows = nomination.lists ?? nomination.entries;
-  const labels = Object.fromEntries(rows.map(([label, principal], index) => {
+  const members = {};
+  const labels = Object.fromEntries(rows.map(([label, ...people], index) => {
     const key = label.split(" · ")[0];
-    const display = nomination.lists || id === "concejo-urbano" ? label : `${principal} · ${label}`;
+    const display = nomination.lists || id === "concejo-urbano" ? label : `${people[0]} · ${label}`;
+    if (!demo && nomination.roles) {
+      const groups = nomination.lists ? people[0] : [people];
+      members[key] = {
+        label,
+        groups: groups.map((group) => group
+          .map((person, roleIndex) => `${nomination.roles[roleIndex]}: ${person}`)
+          .join(" · ")),
+      };
+    }
     return [demo ? String.fromCharCode(97 + index) : key, demo ? `Opción ${index + 1}` : display];
   }));
   return {
-    id, office, scope, candidates: labels,
+    id, office, scope, candidates: labels, members,
     stations: demo ? Array.from({ length: demoStations }, (_, index) => `Mesa de prueba ${index + 1}`) : [],
   };
 }
