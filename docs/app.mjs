@@ -65,6 +65,9 @@ function renderRoster(contest, candidates) {
     const source = element("a", nomination.source);
     source.href = nomination.url;
     $("roster").replaceChildren(list, source);
+    if (nomination.verification) {
+      $("roster").append(element("p", nomination.verification));
+    }
     return;
   }
   $("roster").replaceChildren(...candidates.map(([id, name]) => {

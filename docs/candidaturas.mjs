@@ -1,13 +1,14 @@
 // Referencias públicas independientes de las actas y del catálogo de demostración.
 export const nominations = {
   "alcaldia-centro": {
-    source: "Buscador de Ecuavisa basado en Voto Informado del CNE",
+    source: "Consulta de alcaldía en Ecuavisa",
     url: "https://davidmunoz-create.github.io/listacandidatosalcaldia/",
+    verification: "Nombres y listas cotejados con las cinco fichas de Voto Informado compartidas para Urdaneta.",
     entries: [
       ["1-91 · UNIR", "Leyton Moreira Vasquez"],
       ["3-2 · La Fuerza del Pueblo", "Leydi Alava"],
       ["6 · Partido Social Cristiano", "Doris Zambrano"],
-      ["7 · Acción Democrática Nacional", "Mayra Macias Fernandez"],
+      ["7 · Movimiento Acción Democrática Nacional, ADN", "Mayra Macias Fernandez"],
       ["100 · Movimiento Crecer", "Blanca Najera"],
     ],
   },
