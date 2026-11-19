@@ -58,13 +58,19 @@ function renderRoster(contest, candidates) {
       return;
     }
     const list = document.createElement("ul");
-    list.append(...nomination.entries.map(([label, principal, deputy]) => {
-      const person = deputy ? `Prefectura: ${principal} · Viceprefectura: ${deputy}` : principal;
-      return element("li", `${label} · ${person}`);
+    list.append(...nomination.entries.map(([label, ...people]) => {
+      const names = people.map((person, index) => {
+        const role = nomination.roles?.[index];
+        return role ? `${role}: ${person}` : person;
+      });
+      return element("li", [label, ...names].join(" · "));
     }));
-    const source = element("a", nomination.source);
-    source.href = nomination.url;
-    $("roster").replaceChildren(list, source);
+    $("roster").replaceChildren(list);
+    if (nomination.url && nomination.source) {
+      const source = element("a", nomination.source);
+      source.href = nomination.url;
+      $("roster").append(source);
+    }
     if (nomination.verification) {
       $("roster").append(element("p", nomination.verification));
     }

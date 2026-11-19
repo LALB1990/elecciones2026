@@ -12,7 +12,19 @@ export const nominations = {
       ["100 · Movimiento Crecer", "Blanca Najera"],
     ],
   },
+  "concejo-urbano": {
+    verification: "Nómina cotejada con las cinco fichas de concejalía urbana compartidas para Urdaneta.",
+    roles: ["Principal", "Suplente"],
+    entries: [
+      ["1-91 · UNIR", "Alfonso Murillo Ripalda", "Guisell Castro"],
+      ["3-2 · La Fuerza del Pueblo", "Leodan Salas", "Anayeli Pacheco"],
+      ["6 · Partido Social Cristiano", "Emilia Subia", "Jonathan Miranda"],
+      ["7 · Movimiento Acción Democrática Nacional, ADN", "Ketty Leon", "Erick Flores"],
+      ["100 · Movimiento Crecer", "Karla Salazar", "Juan Burgos"],
+    ],
+  },
   "prefectura-norte": {
+    roles: ["Prefectura", "Viceprefectura"],
     source: "Referencia de los binomios publicados para Los Ríos",
     url: "https://es.wikipedia.org/wiki/Elecciones_provinciales_de_Los_R%C3%ADos_de_2026",
     entries: [
