@@ -4,6 +4,8 @@ Aplicación estática en HTML, CSS y JavaScript. El tablero público se actualiz
 
 La cobertura es el cantón Urdaneta, provincia de Los Ríos, Ecuador. La alcaldía abarca las mesas del cantón, la junta parroquial abarca Ricaurte y la prefectura muestra el subtotal de las actas de Urdaneta. Catarama es la parroquia urbana y se incluye en los resultados del cantón. [División parroquial del GAD de Urdaneta](https://urdaneta.gob.ec/limites/).
 
+Las concejalías urbana y rural se capturan por separado. Para cada lista o binomio, `roster` admite una nómina ordenada de pares `{ role, person }` bajo la misma clave que en `candidates`. La captura registra los votos que constan en el acta para la lista o candidatura. El tablero muestra los principales y suplentes como parte de la nómina, incluso antes de cargar el primer resultado.
+
 ## Demostración
 
 Sirve la carpeta `docs` por HTTP. Con WampServer, abre `http://localhost/elecciones2026/docs/`. Otra opción es ejecutar `python -m http.server 8000 --directory docs` y abrir `http://localhost:8000/`.

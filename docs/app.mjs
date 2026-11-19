@@ -1,5 +1,6 @@
 import { demo, election } from "./config.mjs";
 import { openStore } from "./store.mjs";
+import { nominations } from "./candidaturas.mjs";
 
 const $ = (id) => document.getElementById(id);
 const number = new Intl.NumberFormat("es-EC");
@@ -14,6 +15,7 @@ let dirty = false;
 let saving = false;
 let allowed = demo;
 let store;
+let rosterContestId;
 
 function element(tag, content, className) {
   const node = document.createElement(tag);
@@ -46,6 +48,36 @@ function countsFor(contest) {
   return [...Object.entries(contest.candidates), ["blank", "Votos blancos"], ["null", "Votos nulos"]];
 }
 
+function renderRoster(contest, candidates) {
+  if (rosterContestId === contest.id) return;
+  rosterContestId = contest.id;
+  if (demo) {
+    const nomination = nominations[contest.id];
+    if (!nomination) {
+      $("roster").replaceChildren(element("p", "Nómina pendiente de verificación."));
+      return;
+    }
+    const list = document.createElement("ul");
+    list.append(...nomination.entries.map(([label, principal, deputy]) => {
+      const person = deputy ? `Prefectura: ${principal} · Viceprefectura: ${deputy}` : principal;
+      return element("li", `${label} · ${person}`);
+    }));
+    const source = element("a", nomination.source);
+    source.href = nomination.url;
+    $("roster").replaceChildren(list, source);
+    return;
+  }
+  $("roster").replaceChildren(...candidates.map(([id, name]) => {
+    const members = contest.roster?.[id] ?? [];
+    if (!members.length) return element("p", name, "rank");
+    const details = document.createElement("details");
+    const list = document.createElement("ul");
+    list.append(...members.map(({ role, person }) => element("li", `${role}: ${person}`)));
+    details.append(element("summary", name), list);
+    return details;
+  }));
+}
+
 function renderTabs() {
   $("tabs").replaceChildren(...offices.map((name) => {
     const button = element("button", name);
@@ -66,6 +98,7 @@ function renderDashboard() {
   const contest = contestFor("scope");
   const report = contest.stations.map((_, index) => records[recordId(contest, index)]).filter(Boolean);
   const candidates = Object.entries(contest.candidates);
+  renderRoster(contest, candidates);
   const totals = Object.fromEntries(countsFor(contest).map(([id]) => [
     id,
     report.reduce((sum, record) => {
