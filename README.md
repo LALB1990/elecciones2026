@@ -2,6 +2,8 @@
 
 Aplicación estática en HTML, CSS y JavaScript. El tablero público se actualiza con Cloud Firestore al publicar o corregir un acta de alcaldía, prefectura o junta parroquial. Cada acta corresponde a una mesa y una dignidad. El porcentaje de cada candidatura se calcula sobre los votos válidos de las actas registradas.
 
+La cobertura es el cantón Urdaneta, provincia de Los Ríos, Ecuador. La alcaldía abarca las mesas del cantón, la junta parroquial abarca Ricaurte y la prefectura muestra el subtotal de las actas de Urdaneta. Catarama es la parroquia urbana y se incluye en los resultados del cantón. [División parroquial del GAD de Urdaneta](https://urdaneta.gob.ec/limites/).
+
 ## Demostración
 
 Sirve la carpeta `docs` por HTTP. Con WampServer, abre `http://localhost/elecciones2026/docs/`. Otra opción es ejecutar `python -m http.server 8000 --directory docs` y abrir `http://localhost:8000/`.
