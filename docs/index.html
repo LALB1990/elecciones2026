@@ -18,6 +18,7 @@
       <h1 id="title">Resultados en vivo</h1>
       <p id="subtitle">Consulta los votos a medida que se registran las actas.</p>
       <p id="connection" class="status" role="status">Cargando configuración…</p>
+      <a id="demo-link" class="demo-link" href="?demo" hidden>Ver gráficos con datos de ejemplo</a>
     </section>
     <div id="notice" class="notice" hidden></div>
     <section id="dashboard" hidden aria-label="Tablero de resultados">
@@ -31,11 +32,18 @@
           <div class="panel-head"><h2>Resultados por candidatura o lista</h2><small id="updated"></small></div>
           <div id="ranking"></div>
         </section>
-        <section class="panel roster" aria-labelledby="roster-title">
-          <h2 id="roster-title">Candidaturas y listas</h2>
-          <div id="roster"></div>
+        <section class="panel composition" aria-labelledby="composition-title">
+          <h2 id="composition-title">Composición de la votación</h2>
+          <div class="donut" id="vote-donut">
+            <div class="donut-center"><strong id="vote-total">0</strong><span>Votos registrados</span></div>
+          </div>
+          <ul id="vote-breakdown" class="vote-breakdown"></ul>
         </section>
       </div>
+      <section class="panel roster" aria-labelledby="roster-title">
+        <h2 id="roster-title">Candidaturas y listas</h2>
+        <div id="roster"></div>
+      </section>
     </section>
     <section id="capture" hidden aria-label="Captura de actas">
       <form id="login" class="panel form" hidden>

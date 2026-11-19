@@ -102,6 +102,31 @@ function renderTabs() {
   }));
 }
 
+function renderComposition(valid, blank, invalid) {
+  const total = valid + blank + invalid;
+  const validEnd = total ? valid / total * 100 : 0;
+  const blankEnd = total ? (valid + blank) / total * 100 : 0;
+  const donut = $("vote-donut");
+  donut.classList.toggle("has-votes", total > 0);
+  donut.style.setProperty("--valid-end", `${validEnd}%`);
+  donut.style.setProperty("--blank-end", `${blankEnd}%`);
+  $("vote-total").textContent = number.format(total);
+  const groups = [
+    ["valid", "Válidos", valid],
+    ["blank", "Blancos", blank],
+    ["invalid", "Nulos", invalid],
+  ];
+  $("vote-breakdown").replaceChildren(...groups.map(([kind, label, count]) => {
+    const row = element("li", "", `vote-${kind}`);
+    row.append(
+      element("span", label, "vote-label"),
+      element("strong", number.format(count)),
+      element("span", total ? percent.format(count / total) : "—", "vote-share"),
+    );
+    return row;
+  }));
+}
+
 function renderDashboard() {
   if (!ready) return;
   const contest = contestFor("scope");
@@ -118,6 +143,7 @@ function renderDashboard() {
     }, 0),
   ]));
   const valid = candidates.reduce((sum, [id]) => sum + totals[id], 0);
+  renderComposition(valid, totals.blank, totals.null);
   const metrics = [
     ["Actas registradas", number.format(report.length)],
     ...(demo ? [["Avance de carga", percent.format(report.length / contest.stations.length)]] : []),
@@ -132,20 +158,25 @@ function renderDashboard() {
   }));
   const updated = report.reduce((latest, item) => Math.max(latest, item.updatedAt ?? 0), 0);
   $("updated").textContent = updated ? `Última carga: ${new Date(updated).toLocaleString("es-EC")}` : "";
-  $("ranking").replaceChildren(...(report.length ? candidates
+  const ranking = candidates
     .sort(([a], [b]) => totals[b] - totals[a])
     .map(([id, name]) => {
       const share = valid ? totals[id] / valid : 0;
       const item = element("div", "", "rank");
       const line = element("div", "", "rank-line");
-      line.append(element("strong", name), element("span", `${number.format(totals[id])} votos · ${percent.format(share)}`));
+      const value = valid ? `${number.format(totals[id])} votos · ${percent.format(share)}` : report.length ? "0 votos" : "—";
+      line.append(element("strong", name), element("span", value));
       const bar = document.createElement("progress");
       bar.setAttribute("aria-label", `Porcentaje de votos válidos para ${name}`);
       bar.max = 1;
       bar.value = share;
       item.append(line, bar);
       return item;
-    }) : [element("p", "Aún no hay actas registradas para esta circunscripción.", "empty")]));
+    });
+  if (!report.length) {
+    ranking.unshift(element("p", "Aún no hay actas para esta circunscripción.", "chart-empty"));
+  }
+  $("ranking").replaceChildren(...ranking);
 }
 
 function fillStations() {
@@ -295,6 +326,11 @@ function setupCapture() {
 }
 
 async function start() {
+  $("demo-link").hidden = capture;
+  if (demo) {
+    $("demo-link").textContent = "Volver a resultados reales";
+    $("demo-link").href = "./";
+  }
   $("election").textContent = election.name;
   $(capture ? "capture-link" : "public-link").setAttribute("aria-current", "page");
   if (demo) {
