@@ -105,6 +105,7 @@ export async function openStore() {
       for (const code of codes) batch.set(dbApi.doc(stations, code), { registered: true });
       await batch.commit();
     },
+    renamePollingPlace: (alias, name) => dbApi.updateDoc(dbApi.doc(pollingPlaces, alias), { name }),
     addPollingPlace(alias, name) {
       const ref = dbApi.doc(pollingPlaces, alias);
       return dbApi.runTransaction(db, async (transaction) => {

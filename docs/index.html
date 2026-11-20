@@ -75,7 +75,8 @@
         <form id="add-place">
           <label>Nombre<input name="name" required maxlength="120" placeholder="Unidad Educativa Ricaurte"></label>
           <label>Alias<input name="alias" required maxlength="24" pattern="[A-Za-z0-9]+(-[A-Za-z0-9]+)*" placeholder="UE-RICAURTE"></label>
-          <button>Registrar recinto</button>
+          <button id="save-place">Registrar recinto</button>
+          <button id="cancel-place-edit" class="secondary" type="button" hidden>Cancelar</button>
         </form>
         <ul id="place-list"></ul>
         <p id="place-feedback" role="status"></p>

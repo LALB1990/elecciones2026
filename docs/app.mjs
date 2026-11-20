@@ -217,6 +217,10 @@ function stationRange(first, last, sex) {
 
 function setupPollingPlaces() {
   const form = $("add-place");
+  $("cancel-place-edit").onclick = () => {
+    setPlaceEdit();
+    $("place-feedback").textContent = "";
+  };
   $("polling-place").required = true;
   $("polling-place").oninput = () => {
     syncPlaceSelection();
@@ -253,24 +257,51 @@ function setupPollingPlaces() {
       $("place-feedback").textContent = "Escribe el nombre del recinto.";
       return;
     }
-    const button = form.querySelector("button");
+    const editing = form.elements.alias.readOnly;
+    const button = $("save-place");
     button.disabled = true;
     try {
-      await store.addPollingPlace(alias, name);
-      $("place-feedback").textContent = "Recinto registrado.";
-      form.reset();
+      if (editing) await store.renamePollingPlace(alias, name);
+      else await store.addPollingPlace(alias, name);
+      $("place-feedback").textContent = editing ? "Nombre del recinto actualizado." : "Recinto registrado.";
+      setPlaceEdit();
     } catch (error) {
-      $("place-feedback").textContent = error.name === "DuplicateAlias" ? error.message : "No se pudo registrar el recinto.";
+      $("place-feedback").textContent = error.name === "DuplicateAlias" ? error.message : "No se pudo guardar el recinto.";
     } finally {
       button.disabled = false;
     }
   };
 }
 
+function setPlaceEdit(place) {
+  const form = $("add-place");
+  form.elements.name.value = place?.name ?? "";
+  form.elements.alias.value = place?.alias ?? "";
+  form.elements.alias.readOnly = Boolean(place);
+  $("save-place").textContent = place ? "Guardar cambios" : "Registrar recinto";
+  $("cancel-place-edit").hidden = !place;
+}
+
 function renderPollingPlaces(places) {
+  const selectedAlias = selectedPlace()?.alias;
   pollingPlaces = places.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const selected = pollingPlaces.find(({ alias }) => alias === selectedAlias);
+  if (selected) $("polling-place").value = placeOption(selected);
   $("polling-place-options").replaceChildren(...pollingPlaces.map((place) => new Option(placeOption(place))));
-  $("place-list").replaceChildren(...pollingPlaces.map((place) => element("li", placeOption(place))));
+  $("place-list").replaceChildren(...pollingPlaces.map((place) => {
+    const row = element("li", "");
+    const edit = element("button", "Editar", "secondary");
+    edit.type = "button";
+    edit.setAttribute("aria-label", `Editar ${place.name}`);
+    edit.onclick = () => {
+      if ($("save-place").disabled) return;
+      setPlaceEdit(place);
+      $("place-feedback").textContent = "Puedes corregir el nombre. El alias identifica las juntas y actas.";
+      $("add-place").elements.name.focus();
+    };
+    row.append(element("span", placeOption(place)), edit);
+    return row;
+  }));
   const previous = $("range-place").value;
   options("range-place", [["", "Selecciona el recinto"], ...pollingPlaces.map((place) => [place.alias, placeOption(place)])]);
   if (pollingPlaces.some(({ alias }) => alias === previous)) $("range-place").value = previous;
@@ -431,6 +462,7 @@ function setupCapture() {
     $("verify-operator").hidden = !permissions.needsVerification;
     $("manage-operators").hidden = !permissions.manager;
     $("manage-places").hidden = !permissions.manager;
+    if (!permissions.manager) setPlaceEdit();
     if (allowed && !stopPollingPlaces) {
       stopPollingPlaces = store.watchPollingPlaces(renderPollingPlaces, () => {
         renderPollingPlaces([]);

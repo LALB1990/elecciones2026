@@ -32,7 +32,7 @@ service cloud.firestore {
     }
     match /pollingPlaces/{alias} {
       allow read: if isOperator();
-      allow create: if isManager()
+      allow create, update: if isManager()
         && alias.size() <= 24
         && alias.matches('^[A-Z0-9]+(-[A-Z0-9]+)*$')
         && request.resource.data.keys().hasOnly(['name'])
