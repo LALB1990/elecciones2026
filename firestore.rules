@@ -39,6 +39,14 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 120;
+      match /stations/{code} {
+        allow read: if isOperator();
+        allow create, update: if isManager()
+          && exists(/databases/$(database)/documents/pollingPlaces/$(alias))
+          && code.matches('^([0-9]{3}|[1-9][0-9]{3,4})-[HM]$')
+          && request.resource.data.keys().hasOnly(['registered'])
+          && request.resource.data.registered == true;
+      }
     }
     match /elections/{electionId}/results/{resultId} {
       allow read: if true;

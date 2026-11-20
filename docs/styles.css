@@ -143,7 +143,11 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 8px; }
 #polling-place-status { font-size: .88rem; color: var(--muted); }
 .station-input { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 #station-prefix { background: #e7eeff; color: #1b42a2; padding: 9px 10px; border-radius: 8px; overflow-wrap: anywhere; }
-#station-code { width: 8rem; max-width: 100%; }
+#station-code { width: 16rem; max-width: 100%; }
+#add-stations { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+#add-stations h3 { margin: 0; font-size: 1rem; }
+#add-stations button { justify-self: start; }
+.station-range { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 135px), 1fr)); gap: 10px; }
 #manage-operators summary { font-weight: 700; cursor: pointer; }
 #invite-operator { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; margin-top: 14px; }
 #invite-operator label { flex: 1 1 210px; }

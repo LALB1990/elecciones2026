@@ -79,6 +79,18 @@
         </form>
         <ul id="place-list"></ul>
         <p id="place-feedback" role="status"></p>
+        <form id="add-stations">
+          <h3>Agregar juntas por rango</h3>
+          <div class="station-range">
+            <label>Recinto electoral<select id="range-place" required></select></label>
+            <label>Sexo<select name="sex" required><option value="H">Hombres</option><option value="M">Mujeres</option></select></label>
+            <label>Desde<input name="first" type="number" min="1" max="99999" step="1" required placeholder="001"></label>
+            <label>Hasta<input name="last" type="number" min="1" max="99999" step="1" placeholder="Opcional"></label>
+          </div>
+          <small>Para registrar una sola junta, deja vacío el campo Hasta.</small>
+          <button id="save-range">Registrar juntas</button>
+          <p id="range-feedback" role="status"></p>
+        </form>
       </details>
       <form id="entry" class="panel form" hidden>
         <h2>Registrar acta</h2>
@@ -92,8 +104,8 @@
           <datalist id="polling-place-options"></datalist>
           <p id="polling-place-status" role="status"></p>
           <label>Identificador de la JRV
-            <span class="station-input"><span id="station-prefix" hidden></span><input id="station-code" placeholder="005-M" maxlength="7" pattern="[0-9]{1,5}(-[A-Za-z])?" aria-describedby="station-help"></span>
-            <small id="station-help">Escribe la junta y su tipo como aparecen en el acta. El alias del recinto se añade automáticamente.</small>
+            <span class="station-input"><span id="station-prefix" hidden></span><select id="station-code" aria-describedby="station-help"></select></span>
+            <small id="station-help">Selecciona la junta que figura en el acta.</small>
           </label>
         </div>
         <p id="record-state"></p>

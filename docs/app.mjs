@@ -161,13 +161,13 @@ function currentRecord() {
 function stationCode() {
   if (demo) return $("station").value;
   const place = selectedPlace();
-  const match = /^(\d{1,5})(-[A-Z])?$/.exec($("station-code").value.toUpperCase());
-  if (!place || !match) return "";
-  const number = String(Number(match[1])).padStart(3, "0");
-  return `${place.alias}-${number}${match[2] ?? ""}`;
+  const code = $("station-code").value;
+  return place && code ? `${place.alias}-${code}` : "";
 }
 
 let pollingPlaces = [];
+let stationAlias;
+let stopStations;
 
 function placeOption({ name, alias }) {
   return `${name} (${alias})`;
@@ -184,6 +184,35 @@ function syncPlaceSelection() {
   input.setCustomValidity(input.value && !place ? "Selecciona un recinto del listado." : "");
   $("station-prefix").hidden = !place;
   $("station-prefix").textContent = place ? `${place.alias}-` : "";
+  if (stationAlias === place?.alias && stopStations) return;
+  stopStations?.();
+  stopStations = undefined;
+  stationAlias = place?.alias;
+  options("station-code", [["", place ? "Cargando juntas…" : "Selecciona el recinto"]]);
+  $("station-code").disabled = true;
+  if (!place) return;
+  stopStations = store.watchStations(place.alias, (codes) => {
+    if (stationAlias !== place.alias) return;
+    const current = $("station-code").value;
+    const entries = codes.sort((a, b) => a.localeCompare(b, "es", { numeric: true })).map((code) => [
+      code, `${code} · ${code.endsWith("-H") ? "Hombres" : "Mujeres"}`,
+    ]);
+    options("station-code", [["", entries.length ? "Selecciona la junta" : "Sin juntas registradas"], ...entries]);
+    $("station-code").value = codes.includes(current) ? current : "";
+    $("station-code").disabled = saving || !entries.length;
+    if (!dirty && !saving) loadEntry();
+  }, () => {
+    if (stationAlias !== place.alias) return;
+    options("station-code", [["", "No se pudieron cargar las juntas"]]);
+    $("station-code").disabled = true;
+  });
+}
+
+function stationRange(first, last, sex) {
+  if (!Number.isInteger(first) || !Number.isInteger(last) || first < 1 || last > 99999
+    || last < first || last - first >= 450 || !["H", "M"].includes(sex)) return [];
+  return Array.from({ length: last - first + 1 }, (_, index) =>
+    `${String(first + index).padStart(3, "0")}-${sex}`);
 }
 
 function setupPollingPlaces() {
@@ -192,6 +221,29 @@ function setupPollingPlaces() {
   $("polling-place").oninput = () => {
     syncPlaceSelection();
     loadEntry();
+  };
+  $("add-stations").onsubmit = async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const alias = $("range-place").value;
+    const first = form.elements.first.valueAsNumber;
+    const last = form.elements.last.value === "" ? first : form.elements.last.valueAsNumber;
+    const codes = stationRange(first, last, form.elements.sex.value);
+    if (!codes.length) {
+      $("range-feedback").textContent = "Verifica el rango. Puedes registrar hasta 450 juntas por operación.";
+      return;
+    }
+    $("save-range").disabled = true;
+    try {
+      await store.addStations(alias, codes);
+      $("range-feedback").textContent = `Juntas disponibles para captura: ${codes[0]} a ${codes.at(-1)}.`;
+      form.elements.first.value = "";
+      form.elements.last.value = "";
+    } catch {
+      $("range-feedback").textContent = "No se pudieron registrar las juntas.";
+    } finally {
+      $("save-range").disabled = false;
+    }
   };
   form.onsubmit = async (event) => {
     event.preventDefault();
@@ -219,6 +271,9 @@ function renderPollingPlaces(places) {
   pollingPlaces = places.sort((a, b) => a.name.localeCompare(b.name, "es"));
   $("polling-place-options").replaceChildren(...pollingPlaces.map((place) => new Option(placeOption(place))));
   $("place-list").replaceChildren(...pollingPlaces.map((place) => element("li", placeOption(place))));
+  const previous = $("range-place").value;
+  options("range-place", [["", "Selecciona el recinto"], ...pollingPlaces.map((place) => [place.alias, placeOption(place)])]);
+  if (pollingPlaces.some(({ alias }) => alias === previous)) $("range-place").value = previous;
   $("polling-place-status").textContent = places.length ? "" : "Aún no hay recintos registrados.";
   syncPlaceSelection();
   if (!dirty) loadEntry();
@@ -232,7 +287,7 @@ function loadEntry() {
   $("reload-entry").hidden = true;
   $("record-state").textContent = record ? `Acta publicada · revisión ${loadedRevision}`
     : stationCode() ? "Acta pendiente" : demo || selectedPlace()
-      ? "Ingresa el identificador de la junta." : "Selecciona el recinto electoral.";
+      ? "Selecciona la junta." : "Selecciona el recinto electoral.";
   $("publish").textContent = record ? "Publicar corrección" : "Publicar acta";
   $("counts").replaceChildren(...countsFor(contest).map(([id, name]) => {
     const label = element("label", name);
@@ -312,6 +367,7 @@ function setupOperatorManager() {
 function setSaving(value) {
   saving = value;
   for (const control of $("entry").querySelectorAll("select, input, button")) control.disabled = value;
+  if (!demo && $("station-code").options.length <= 1) $("station-code").disabled = true;
   $("logout").disabled = value;
 }
 
@@ -341,7 +397,7 @@ function setupCapture() {
   $("demo-station").hidden = !demo;
   $("live-station").hidden = demo;
   $("station-code").required = !demo;
-  $("station-code").oninput = loadEntry;
+  $("station-code").onchange = loadEntry;
   options("capture-office", offices.map((name) => [name, name]));
   fillScopes("capture-scope", offices[0]);
   fillStations();

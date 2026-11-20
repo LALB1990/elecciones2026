@@ -93,6 +93,18 @@ export async function openStore() {
         onData(snapshot.docs.map((item) => ({ alias: item.id, name: item.data().name })));
       }, onError);
     },
+    watchStations(alias, onData, onError) {
+      const stations = dbApi.collection(pollingPlaces, alias, "stations");
+      return dbApi.onSnapshot(stations, (snapshot) => {
+        onData(snapshot.docs.map((item) => item.id));
+      }, onError);
+    },
+    async addStations(alias, codes) {
+      const stations = dbApi.collection(pollingPlaces, alias, "stations");
+      const batch = dbApi.writeBatch(db);
+      for (const code of codes) batch.set(dbApi.doc(stations, code), { registered: true });
+      await batch.commit();
+    },
     addPollingPlace(alias, name) {
       const ref = dbApi.doc(pollingPlaces, alias);
       return dbApi.runTransaction(db, async (transaction) => {
