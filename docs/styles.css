@@ -81,8 +81,9 @@ input, select { width: 100%; color: var(--ink); background: #fff; }
   overflow-wrap: anywhere;
 }
 .counts input {
-  min-width: 0;
+  width: clamp(4.25rem, 20%, 5.5rem);
   height: 46px;
+  padding-inline: 6px;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
