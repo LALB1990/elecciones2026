@@ -24,6 +24,8 @@ La configuración web del SDK puede estar en GitHub. Las contraseñas y las clav
 
 ## Administrar operadores
 
+En **Captura → Administrar recintos**, la cuenta administradora registra el nombre del recinto y un alias único, por ejemplo `UE-RICAURTE`. En el formulario de actas, el operador selecciona el recinto y escribe la junta y su tipo, por ejemplo `005-M`. La clave resultante es `UE-RICAURTE-005-M`.
+
 En **Captura → Administrar operadores**, la cuenta administradora puede autorizar un correo o retirarle el permiso. La persona autorizada abre Captura, escribe su correo, elige una contraseña y pulsa **Crear mi cuenta**. Después de abrir el enlace de Firebase, debe pulsar **Ya verifiqué mi correo**. Retirar el permiso bloquea nuevas publicaciones y correcciones de esa cuenta. Para habilitar a un administrador inicial, asigna `manager: true` al documento `operators/<UID>` desde Firebase.
 
 ## GitHub Pages

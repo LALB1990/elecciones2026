@@ -42,6 +42,7 @@ export async function openStore() {
   const db = dbApi.getFirestore(app);
   const records = dbApi.collection(db, "elections", election.id, "results");
   const operatorEmails = dbApi.collection(db, "operatorEmails");
+  const pollingPlaces = dbApi.collection(db, "pollingPlaces");
   async function access(user) {
     if (!user) return { allowed: false, manager: false, needsVerification: false };
     const role = await dbApi.getDocFromServer(dbApi.doc(db, "operators", user.uid));
@@ -87,6 +88,22 @@ export async function openStore() {
       return snapshot.docs.map((item) => [item.id, item.data().enabled]);
     },
     setOperator: (email, enabled) => dbApi.setDoc(dbApi.doc(operatorEmails, email), { enabled }),
+    watchPollingPlaces(onData, onError) {
+      return dbApi.onSnapshot(pollingPlaces, (snapshot) => {
+        onData(snapshot.docs.map((item) => ({ alias: item.id, name: item.data().name })));
+      }, onError);
+    },
+    addPollingPlace(alias, name) {
+      const ref = dbApi.doc(pollingPlaces, alias);
+      return dbApi.runTransaction(db, async (transaction) => {
+        if ((await transaction.get(ref)).exists()) {
+          const error = new Error("Ya hay un recinto con ese alias.");
+          error.name = "DuplicateAlias";
+          throw error;
+        }
+        transaction.set(ref, { name });
+      });
+    },
     resetPassword: (email) => authApi.sendPasswordResetEmail(auth, email),
     logout: () => authApi.signOut(auth),
     save(id, votes, revision) {

@@ -70,15 +70,32 @@
         <ul id="operator-list"></ul>
         <p id="operator-feedback" role="status"></p>
       </details>
+      <details id="manage-places" class="panel" hidden>
+        <summary>Administrar recintos</summary>
+        <form id="add-place">
+          <label>Nombre<input name="name" required maxlength="120" placeholder="Unidad Educativa Ricaurte"></label>
+          <label>Alias<input name="alias" required maxlength="24" pattern="[A-Za-z0-9]+(-[A-Za-z0-9]+)*" placeholder="UE-RICAURTE"></label>
+          <button>Registrar recinto</button>
+        </form>
+        <ul id="place-list"></ul>
+        <p id="place-feedback" role="status"></p>
+      </details>
       <form id="entry" class="panel form" hidden>
         <h2>Registrar acta</h2>
         <label>Dignidad<select id="capture-office"></select></label>
         <label>Circunscripción<select id="capture-scope"></select></label>
         <label id="demo-station">Mesa de demostración<select id="station"></select></label>
-        <label id="live-station">Identificador de la JRV
-          <input id="station-code" placeholder="Identificador único de la junta" maxlength="32" pattern="[A-Za-z0-9]+(-[A-Za-z0-9]+)*" aria-describedby="station-help">
-          <small id="station-help">Usa un código único para toda Urdaneta. Si el número se repite, incluye el código del recinto y el tipo de junta separados por guiones.</small>
-        </label>
+        <div id="live-station">
+          <label>Recinto electoral
+            <input id="polling-place" list="polling-place-options" placeholder="Buscar recinto por nombre o alias" autocomplete="off">
+          </label>
+          <datalist id="polling-place-options"></datalist>
+          <p id="polling-place-status" role="status"></p>
+          <label>Identificador de la JRV
+            <span class="station-input"><span id="station-prefix" hidden></span><input id="station-code" placeholder="005-M" maxlength="7" pattern="[0-9]{1,5}(-[A-Za-z])?" aria-describedby="station-help"></span>
+            <small id="station-help">Escribe la junta y su tipo como aparecen en el acta. El alias del recinto se añade automáticamente.</small>
+          </label>
+        </div>
         <p id="record-state"></p>
         <div id="counts" class="counts"></div>
         <p id="entry-total">Total de votos del acta: 0</p>

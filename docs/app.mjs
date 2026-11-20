@@ -159,7 +159,69 @@ function currentRecord() {
 }
 
 function stationCode() {
-  return demo ? $("station").value : $("station-code").value;
+  if (demo) return $("station").value;
+  const place = selectedPlace();
+  const match = /^(\d{1,5})(-[A-Z])?$/.exec($("station-code").value.toUpperCase());
+  if (!place || !match) return "";
+  const number = String(Number(match[1])).padStart(3, "0");
+  return `${place.alias}-${number}${match[2] ?? ""}`;
+}
+
+let pollingPlaces = [];
+
+function placeOption({ name, alias }) {
+  return `${name} (${alias})`;
+}
+
+function selectedPlace() {
+  const value = $("polling-place").value.trim().toUpperCase();
+  return pollingPlaces.find((place) => placeOption(place).toUpperCase() === value || place.alias === value);
+}
+
+function syncPlaceSelection() {
+  const place = selectedPlace();
+  const input = $("polling-place");
+  input.setCustomValidity(input.value && !place ? "Selecciona un recinto del listado." : "");
+  $("station-prefix").hidden = !place;
+  $("station-prefix").textContent = place ? `${place.alias}-` : "";
+}
+
+function setupPollingPlaces() {
+  const form = $("add-place");
+  $("polling-place").required = true;
+  $("polling-place").oninput = () => {
+    syncPlaceSelection();
+    loadEntry();
+  };
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    const name = form.elements.name.value.trim();
+    const alias = form.elements.alias.value.trim().toUpperCase();
+    if (!name) {
+      $("place-feedback").textContent = "Escribe el nombre del recinto.";
+      return;
+    }
+    const button = form.querySelector("button");
+    button.disabled = true;
+    try {
+      await store.addPollingPlace(alias, name);
+      $("place-feedback").textContent = "Recinto registrado.";
+      form.reset();
+    } catch (error) {
+      $("place-feedback").textContent = error.name === "DuplicateAlias" ? error.message : "No se pudo registrar el recinto.";
+    } finally {
+      button.disabled = false;
+    }
+  };
+}
+
+function renderPollingPlaces(places) {
+  pollingPlaces = places.sort((a, b) => a.name.localeCompare(b.name, "es"));
+  $("polling-place-options").replaceChildren(...pollingPlaces.map((place) => new Option(placeOption(place))));
+  $("place-list").replaceChildren(...pollingPlaces.map((place) => element("li", placeOption(place))));
+  $("polling-place-status").textContent = places.length ? "" : "Aún no hay recintos registrados.";
+  syncPlaceSelection();
+  if (!dirty) loadEntry();
 }
 
 function loadEntry() {
@@ -169,7 +231,8 @@ function loadEntry() {
   dirty = false;
   $("reload-entry").hidden = true;
   $("record-state").textContent = record ? `Acta publicada · revisión ${loadedRevision}`
-    : stationCode() ? "Acta pendiente" : "Ingresa el identificador de la junta.";
+    : stationCode() ? "Acta pendiente" : demo || selectedPlace()
+      ? "Ingresa el identificador de la junta." : "Selecciona el recinto electoral.";
   $("publish").textContent = record ? "Publicar corrección" : "Publicar acta";
   $("counts").replaceChildren(...countsFor(contest).map(([id, name]) => {
     const label = element("label", name);
@@ -254,7 +317,7 @@ function setSaving(value) {
 
 async function publish(event) {
   event.preventDefault();
-  if (saving || !allowed || !ready) return;
+  if (saving || !allowed || !ready || !stationCode()) return;
   const id = recordId(contestFor("capture-scope"), stationCode());
   const votes = Object.fromEntries([...$("counts").querySelectorAll("input")].map((input) => [input.name, input.valueAsNumber]));
   const station = demo ? $("station").selectedOptions[0].textContent : stationCode().toUpperCase();
@@ -300,6 +363,8 @@ function setupCapture() {
   };
   $("entry").onsubmit = publish;
   if (demo) return;
+  setupPollingPlaces();
+  let stopPollingPlaces;
   const renderOperators = setupOperatorManager();
   function showAccess(user, permissions) {
     allowed = permissions.allowed;
@@ -309,6 +374,19 @@ function setupCapture() {
     $("logout").hidden = !user;
     $("verify-operator").hidden = !permissions.needsVerification;
     $("manage-operators").hidden = !permissions.manager;
+    $("manage-places").hidden = !permissions.manager;
+    if (allowed && !stopPollingPlaces) {
+      stopPollingPlaces = store.watchPollingPlaces(renderPollingPlaces, () => {
+        renderPollingPlaces([]);
+        $("polling-place-status").textContent = "No se pudo cargar el listado de recintos.";
+      });
+    } else if (!allowed && stopPollingPlaces) {
+      stopPollingPlaces();
+      stopPollingPlaces = undefined;
+      $("polling-place").value = "";
+      $("station-code").value = "";
+      renderPollingPlaces([]);
+    }
     if (permissions.manager) renderOperators();
     else $("operator-list").replaceChildren();
     feedback(user && !allowed && !permissions.needsVerification
