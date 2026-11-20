@@ -43,7 +43,7 @@ function recordId(contest, index) {
 }
 
 function countsFor(contest) {
-  return [...Object.entries(contest.candidates), ["blank", "Votos blancos"], ["null", "Votos nulos"]];
+  return [...contest.candidates, ["blank", "Votos blancos"], ["null", "Votos nulos"]];
 }
 
 function renderTabs() {
@@ -92,7 +92,7 @@ function renderDashboard() {
   const report = demo
     ? contest.stations.map((_, index) => records[recordId(contest, index)]).filter(Boolean)
     : Object.entries(records).filter(([id]) => id.startsWith(`${contest.id}_`)).map(([, record]) => record);
-  const candidates = Object.entries(contest.candidates);
+  const candidates = contest.candidates;
   const totals = Object.fromEntries(countsFor(contest).map(([id]) => [
     id,
     report.reduce((sum, record) => {
@@ -117,7 +117,6 @@ function renderDashboard() {
   const updated = report.reduce((latest, item) => Math.max(latest, item.updatedAt ?? 0), 0);
   $("updated").textContent = updated ? `Última carga: ${new Date(updated).toLocaleString("es-EC")}` : "";
   const ranking = candidates
-    .sort(([a], [b]) => totals[b] - totals[a])
     .map(([id, name]) => {
       const share = valid ? totals[id] / valid : 0;
       const item = element("div", "", "rank");

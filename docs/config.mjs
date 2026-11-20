@@ -12,7 +12,7 @@ function contest(id, office, scope, demoStations) {
   const nomination = nominations[id];
   const rows = nomination.lists ?? nomination.entries;
   const members = {};
-  const labels = Object.fromEntries(rows.map(([label, ...people], index) => {
+  const candidates = rows.map(([label, ...people], index) => {
     const key = label.split(" · ")[0];
     const display = nomination.lists || id === "concejo-urbano" ? label : `${people[0]} · ${label}`;
     if (!demo && nomination.roles) {
@@ -25,9 +25,9 @@ function contest(id, office, scope, demoStations) {
       };
     }
     return [demo ? String.fromCharCode(97 + index) : key, demo ? `Opción ${index + 1}` : display];
-  }));
+  });
   return {
-    id, office, scope, candidates: labels, members,
+    id, office, scope, candidates, members,
     stations: demo ? Array.from({ length: demoStations }, (_, index) => `Mesa de prueba ${index + 1}`) : [],
   };
 }
