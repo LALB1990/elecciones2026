@@ -3,7 +3,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isOperator() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/operators/$(request.auth.uid));
+        && (exists(/databases/$(database)/documents/operators/$(request.auth.uid))
+          || (request.auth.token.email_verified == true
+            && get(/databases/$(database)/documents/operatorEmails/$(request.auth.token.email)).data.enabled == true));
+    }
+    function isManager() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.manager == true;
     }
     function validResult() {
       let data = request.resource.data;
@@ -16,6 +22,13 @@ service cloud.firestore {
     }
     match /operators/{uid} {
       allow get: if request.auth != null && request.auth.uid == uid;
+    }
+    match /operatorEmails/{email} {
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow read: if isManager();
+      allow create, update: if isManager()
+        && request.resource.data.keys().hasOnly(['enabled'])
+        && request.resource.data.enabled is bool;
     }
     match /elections/{electionId}/results/{resultId} {
       allow read: if true;

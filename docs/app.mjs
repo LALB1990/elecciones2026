@@ -197,6 +197,55 @@ function feedback(message) {
   $("feedback").textContent = message;
 }
 
+function setupOperatorManager() {
+  const form = $("invite-operator");
+  const message = $("operator-feedback");
+  async function setPermission(email, enabled) {
+    try {
+      await store.setOperator(email, enabled);
+      message.textContent = enabled
+        ? "Correo autorizado. La persona ya puede crear su cuenta en Captura."
+        : "Se retiró el permiso para registrar actas.";
+      await renderOperators();
+    } catch {
+      message.textContent = "No se pudo actualizar el acceso.";
+    }
+  }
+  async function renderOperators() {
+    try {
+      const operators = await store.listOperators();
+      $("operator-list").replaceChildren(...operators.map(([email, enabled]) => {
+        const row = element("li", "");
+        const button = element("button", enabled ? "Revocar acceso" : "Volver a autorizar", "secondary");
+        button.type = "button";
+        button.setAttribute("aria-label", `${button.textContent} de ${email}`);
+        button.onclick = async () => {
+          button.disabled = true;
+          await setPermission(email, !enabled);
+          button.disabled = false;
+        };
+        row.append(element("span", `${email} · ${enabled ? "Autorizado" : "Revocado"}`), button);
+        return row;
+      }));
+    } catch {
+      message.textContent = "No se pudo cargar la lista de operadores.";
+    }
+  }
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    const email = form.elements.email.value.trim().toLowerCase();
+    if (email.includes("/")) {
+      message.textContent = "El correo contiene un carácter incompatible.";
+      return;
+    }
+    const button = form.querySelector("button");
+    button.disabled = true;
+    await setPermission(email, true);
+    button.disabled = false;
+  };
+  return renderOperators;
+}
+
 function setSaving(value) {
   saving = value;
   for (const control of $("entry").querySelectorAll("select, input, button")) control.disabled = value;
@@ -251,14 +300,60 @@ function setupCapture() {
   };
   $("entry").onsubmit = publish;
   if (demo) return;
-  store.watchUser((user, canEdit) => {
-    allowed = Boolean(canEdit);
+  const renderOperators = setupOperatorManager();
+  function showAccess(user, permissions) {
+    allowed = permissions.allowed;
     if (ready) loadEntry();
     updateAccess();
     $("login").hidden = Boolean(user);
     $("logout").hidden = !user;
-    feedback(user && !canEdit ? "Esta cuenta no está habilitada para publicar actas." : "");
-  }, () => feedback("No se pudieron verificar los permisos del operador."));
+    $("verify-operator").hidden = !permissions.needsVerification;
+    $("manage-operators").hidden = !permissions.manager;
+    if (permissions.manager) renderOperators();
+    else $("operator-list").replaceChildren();
+    feedback(user && !allowed && !permissions.needsVerification
+      ? "Esta cuenta no está habilitada para publicar actas." : "");
+  }
+  store.watchUser(showAccess, () => {
+    allowed = false;
+    updateAccess();
+    feedback("No se pudieron verificar los permisos del operador.");
+  });
+  $("register-operator").onclick = async () => {
+    const form = $("login");
+    if (!form.reportValidity()) return;
+    const { email, password } = Object.fromEntries(new FormData(form));
+    if (password.length < 6) {
+      feedback("Elige una contraseña de al menos seis caracteres.");
+      return;
+    }
+    $("register-operator").disabled = true;
+    try {
+      await store.register(email.trim().toLowerCase(), password);
+      form.reset();
+    } catch {
+      feedback("No se pudo completar el registro. Si ya tienes cuenta, prueba a ingresar o restablecer la contraseña.");
+    } finally {
+      $("register-operator").disabled = false;
+    }
+  };
+  $("resend-verification").onclick = async () => {
+    try {
+      await store.resendVerification();
+      feedback("Enlace de verificación enviado.");
+    } catch {
+      feedback("No se pudo reenviar el enlace. Intenta nuevamente en unos minutos.");
+    }
+  };
+  $("check-verification").onclick = async () => {
+    try {
+      const permissions = await store.refreshAccess();
+      showAccess(true, permissions);
+      if (permissions.needsVerification) feedback("Firebase todavía no confirma la verificación del correo.");
+    } catch {
+      feedback("No se pudo comprobar la verificación del correo.");
+    }
+  };
   $("login").onsubmit = async (event) => {
     event.preventDefault();
     const form = event.currentTarget;

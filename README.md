@@ -22,6 +22,10 @@ Abre el sitio con `?demo` y entra en **Captura** desde el menú en otra pestaña
 
 La configuración web del SDK puede estar en GitHub. Las contraseñas y las claves de cuentas de servicio se administran fuera del repositorio. El tablero y las actas de resultados son públicos. Las reglas verifican el operador, la revisión, la marca de tiempo y los votos blancos y nulos. La aplicación valida los votos por candidatura antes de enviar el acta. Al guardar, la transacción rechaza una corrección si otro operador modificó el acta desde que se abrió.
 
+## Administrar operadores
+
+En **Captura → Administrar operadores**, la cuenta administradora puede autorizar un correo o retirarle el permiso. La persona autorizada abre Captura, escribe su correo, elige una contraseña y pulsa **Crear mi cuenta**. Después de abrir el enlace de Firebase, debe pulsar **Ya verifiqué mi correo**. Retirar el permiso bloquea nuevas publicaciones y correcciones de esa cuenta. Para habilitar a un administrador inicial, asigna `manager: true` al documento `operators/<UID>` desde Firebase.
+
 ## GitHub Pages
 
 Sube el repositorio a GitHub, abre **Settings → Pages**, elige **Deploy from a branch** y selecciona la rama `main` y la carpeta `/docs`. El enlace de captura es la URL publicada con `?vista=captura`.

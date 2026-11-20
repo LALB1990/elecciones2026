@@ -47,10 +47,28 @@
         <label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label>
         <div class="actions">
           <button>Ingresar</button>
+          <button id="register-operator" class="secondary" type="button">Crear mi cuenta</button>
           <button id="reset-password" class="secondary" type="button">Restablecer contraseña</button>
         </div>
       </form>
       <button id="logout" type="button" class="secondary" hidden>Cerrar sesión</button>
+      <div id="verify-operator" class="panel form" hidden>
+        <h2>Verifica tu correo</h2>
+        <p>Abre el enlace de verificación que te envió Firebase y después confirma aquí.</p>
+        <div class="actions">
+          <button id="check-verification" type="button">Ya verifiqué mi correo</button>
+          <button id="resend-verification" class="secondary" type="button">Reenviar enlace</button>
+        </div>
+      </div>
+      <details id="manage-operators" class="panel" hidden>
+        <summary>Administrar operadores</summary>
+        <form id="invite-operator">
+          <label>Correo del nuevo operador<input name="email" type="email" required maxlength="254"></label>
+          <button>Autorizar correo</button>
+        </form>
+        <ul id="operator-list"></ul>
+        <p id="operator-feedback" role="status"></p>
+      </details>
       <form id="entry" class="panel form" hidden>
         <h2>Registrar acta</h2>
         <label>Dignidad<select id="capture-office"></select></label>

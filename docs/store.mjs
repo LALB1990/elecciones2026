@@ -41,6 +41,15 @@ export async function openStore() {
   const auth = authApi.getAuth(app);
   const db = dbApi.getFirestore(app);
   const records = dbApi.collection(db, "elections", election.id, "results");
+  const operatorEmails = dbApi.collection(db, "operatorEmails");
+  async function access(user) {
+    if (!user) return { allowed: false, manager: false, needsVerification: false };
+    const role = await dbApi.getDocFromServer(dbApi.doc(db, "operators", user.uid));
+    if (role.exists()) return { allowed: true, manager: role.data().manager === true, needsVerification: false };
+    const invitation = user.email && await dbApi.getDocFromServer(dbApi.doc(operatorEmails, user.email));
+    const invited = invitation?.data()?.enabled === true;
+    return { allowed: invited && user.emailVerified, manager: false, needsVerification: invited && !user.emailVerified };
+  }
   return {
     listen(onData, onError) {
       dbApi.onSnapshot(records, { includeMetadataChanges: true }, (snapshot) => {
@@ -54,14 +63,30 @@ export async function openStore() {
     watchUser(callback, onError) {
       authApi.onAuthStateChanged(auth, async (user) => {
         try {
-          const allowed = user && (await dbApi.getDocFromServer(dbApi.doc(db, "operators", user.uid))).exists();
-          if (auth.currentUser === user) callback(user, allowed);
+          const permissions = await access(user);
+          if (auth.currentUser === user) callback(user, permissions);
         } catch (error) {
           if (auth.currentUser === user) onError(error);
         }
       }, onError);
     },
     login: (email, password) => authApi.signInWithEmailAndPassword(auth, email, password),
+    async register(email, password) {
+      const { user } = await authApi.createUserWithEmailAndPassword(auth, email, password);
+      if ((await access(user)).needsVerification) await authApi.sendEmailVerification(user);
+    },
+    resendVerification: () => authApi.sendEmailVerification(auth.currentUser),
+    async refreshAccess() {
+      const user = auth.currentUser;
+      await authApi.reload(user);
+      await authApi.getIdToken(user, true);
+      return access(user);
+    },
+    async listOperators() {
+      const snapshot = await dbApi.getDocsFromServer(operatorEmails);
+      return snapshot.docs.map((item) => [item.id, item.data().enabled]);
+    },
+    setOperator: (email, enabled) => dbApi.setDoc(dbApi.doc(operatorEmails, email), { enabled }),
     resetPassword: (email) => authApi.sendPasswordResetEmail(auth, email),
     logout: () => authApi.signOut(auth),
     save(id, votes, revision) {
