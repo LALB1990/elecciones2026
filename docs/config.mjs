@@ -37,9 +37,9 @@ export const election = {
   name: "Urdaneta · Los Ríos, Ecuador",
   contests: [
     contest("alcaldia-centro", "Alcaldía", "Cantón Urdaneta", 4),
-    contest("concejo-urbano", "Concejalía urbana", "Catarama", 2),
-    contest("concejo-rural", "Concejalía rural", "Ricaurte", 3),
+    contest("concejo-urbano", "Concejalía Urbana", "Catarama", 2),
+    contest("concejo-rural", "Concejalía Rural", "Ricaurte", 3),
     contest("prefectura-norte", "Prefectura", "Los Ríos · Solo mesas de Urdaneta", 4),
-    contest("junta-centro", "Junta parroquial", "Parroquia rural Ricaurte", 3),
+    contest("junta-centro", "Junta Parroquial", "Parroquia rural Ricaurte", 3),
   ],
 };
